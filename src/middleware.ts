@@ -11,7 +11,18 @@
 // that Turbopack bug is fixed upstream.
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher(["/", "/sign-in(.*)", "/sign-up(.*)"]);
+// /icon and /apple-icon are Next.js's generated favicon routes (no file
+// extension in their URL, so the matcher's extension-exclusion list below
+// doesn't skip them) — without listing them here, a signed-out visitor's
+// browser fails to load the favicon at all, since auth.protect() runs on
+// every request to them.
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/icon",
+  "/apple-icon",
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
