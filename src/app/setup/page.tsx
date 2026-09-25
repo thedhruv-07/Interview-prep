@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { fetchJson } from "@/lib/fetch-json";
 
 const fieldClassName =
   "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
@@ -28,9 +29,10 @@ export default function SetupPage() {
     try {
       const formData = new FormData();
       formData.append("resume", file);
-      const res = await fetch("/api/resume/parse", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not read PDF");
+      const data = await fetchJson<{ text: string }>("/api/resume/parse", {
+        method: "POST",
+        body: formData,
+      });
       setResumeText(data.text);
     } catch (err) {
       setError((err as Error).message);
@@ -51,13 +53,14 @@ export default function SetupPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeText, jobDescription, companyName, roleTitle }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong");
+      const data = await fetchJson<{ applicationId: string; questions: unknown[] }>(
+        "/api/applications",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resumeText, jobDescription, companyName, roleTitle }),
+        }
+      );
       sessionStorage.setItem(`questions:${data.applicationId}`, JSON.stringify(data.questions));
       router.push(`/practice/${data.applicationId}`);
     } catch (err) {

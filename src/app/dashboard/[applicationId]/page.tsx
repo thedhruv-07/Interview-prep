@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ScoreMeter } from "@/components/score-meter";
 import { formatWeakArea } from "@/lib/format-weak-area";
+import { fetchJson } from "@/lib/fetch-json";
 
 interface Attempt {
   id: string;
@@ -41,12 +42,8 @@ export default function SessionDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/applications/${applicationId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setApplication(data.application);
-      })
+    fetchJson<{ application: ApplicationDetail }>(`/api/applications/${applicationId}`)
+      .then((data) => setApplication(data.application))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [applicationId]);

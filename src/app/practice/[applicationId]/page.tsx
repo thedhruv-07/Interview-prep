@@ -7,6 +7,7 @@ import { AnimatedCounter } from "@/components/animated-counter";
 import { FeedbackChat } from "@/components/feedback-chat";
 import { formatWeakArea } from "@/lib/format-weak-area";
 import { Button } from "@/components/ui/button";
+import { fetchJson } from "@/lib/fetch-json";
 
 interface Question {
   id: string;
@@ -59,7 +60,7 @@ export default function PracticePage() {
 
     const question = questions[activeIndex];
     try {
-      const res = await fetch("/api/attempts/score", {
+      const data = await fetchJson<ScoreResult>("/api/attempts/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -68,8 +69,6 @@ export default function PracticePage() {
           userAnswer: answer,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
       setResult({ score: data.score, feedback: data.feedback, weak_areas: data.weak_areas });
     } catch (err) {
       setResult({

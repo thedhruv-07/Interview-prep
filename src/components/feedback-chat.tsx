@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { fetchJson } from "@/lib/fetch-json";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -31,13 +32,11 @@ export function FeedbackChat({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/attempts/chat", {
+      const data = await fetchJson<{ reply: string }>("/api/attempts/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questionText, userAnswer, feedback, messages: nextMessages }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Chat failed");
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
     } catch (err) {
       setError((err as Error).message);

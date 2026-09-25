@@ -8,6 +8,7 @@ import { ScoreMeter } from "@/components/score-meter";
 import { GradientBackground } from "@/components/animate-ui/components/backgrounds/gradient";
 import { formatWeakArea } from "@/lib/format-weak-area";
 import { buttonVariants } from "@/components/ui/button";
+import { fetchJson } from "@/lib/fetch-json";
 
 interface Attempt {
   score: number;
@@ -56,12 +57,8 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/applications")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setApplications(data.applications ?? []);
-      })
+    fetchJson<{ applications?: Application[] }>("/api/applications")
+      .then((data) => setApplications(data.applications ?? []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
