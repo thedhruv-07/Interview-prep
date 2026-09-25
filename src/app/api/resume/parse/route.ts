@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+// Static import on purpose: PDF.js loads its worker via a dynamic path the
+// file tracer can't see, so without this pdf.worker.mjs is left out of the
+// serverless bundle and every PDF upload 500s in production ("Setting up
+// fake worker failed") even though it works in dev. Must come before the
+// PDFParse import (per pdf-parse's serverless docs).
+import "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 
 // Lets the setup page offer "upload a PDF" as an alternative to pasting
